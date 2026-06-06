@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /boards/{boardId} {
+      // Anyone can read boards
+      allow read: if true;
+      // Anyone can create a board (basic spam protection: required fields)
+      allow create: if request.resource.data.keys().hasAll(['name','title','body','tag','hearts','replyCount','time'])
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() > 0
+                    && request.resource.data.name.size() <= 30
+                    && request.resource.data.title.size() >= 5
+                    && request.resource.data.title.size() <= 100
+                    && request.resource.data.body.size() >= 20
+                    && request.resource.data.body.size() <= 2000;
+      // Only hearts and replyCount can be updated (no editing stories)
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hearts','replyCount']);
+
+      match /replies/{replyId} {
+        allow read: if true;
+        allow create: if request.resource.data.keys().hasAll(['name','body','time'])
+                      && request.resource.data.name.size() > 0
+                      && request.resource.data.body.size() >= 5
+                      && request.resource.data.body.size() <= 800;
+      }
+    }
+  }
+}

@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open Heart — A safe place to open up</title>
+<meta name="description" content="A safe, anonymous space where you can speak your heart. No judgment. No real names. Just honest words and people who understand.">
+<meta property="og:title" content="Open Heart">
+<meta property="og:description" content="A safe, anonymous space where you can speak your heart.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #FAF7F2; --ink: #1A1612; --ink-muted: #6B6560; --ink-faint: #B8B3AE;
+    --warm-white: #FFFEF9; --border: rgba(26,22,18,0.1); --border-hover: rgba(26,22,18,0.22);
+    --accent: #C4634A; --accent-soft: #F5EBE7;
+    --tag-grief: #4A5568; --tag-grief-bg: #EDF2F7;
+    --tag-anxiety: #276749; --tag-anxiety-bg: #F0FFF4;
+    --tag-loneliness: #702459; --tag-loneliness-bg: #FFF5F7;
+    --tag-anger: #7B341E; --tag-anger-bg: #FFFAF0;
+    --tag-relationship: #2C5282; --tag-relationship-bg: #EBF8FF;
+    --tag-loss: #553C9A; --tag-loss-bg: #FAF5FF;
+    --tag-open: #5F5E5A; --tag-open-bg: #F7F6F3;
+    --radius: 12px; --radius-sm: 8px;
+    --serif: 'DM Serif Display', serif; --sans: 'DM Sans', sans-serif;
+  }
+  html { font-family: var(--sans); background: var(--cream); color: var(--ink); scroll-behavior: smooth; }
+  body { min-height: 100vh; }
+  body::before {
+    content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 128px;
+  }
+  .view { display: none; position: relative; z-index: 1; }
+  .view.active { display: block; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(250,247,242,0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px;
+  }
+  .logo { font-family: var(--serif); font-size: 22px; color: var(--ink); cursor: pointer; user-select: none; display: flex; align-items: center; gap: 8px; }
+  .nav-actions { display: flex; gap: 10px; align-items: center; }
+  .btn { font-family: var(--sans); font-size: 13px; font-weight: 500; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; border: none; outline: none; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border-hover); color: var(--ink-muted); padding: 7px 16px; }
+  .btn-ghost:hover { background: var(--border); color: var(--ink); }
+  .btn-accent { background: var(--accent); color: white; padding: 8px 18px; }
+  .btn-accent:hover { background: #B55740; }
+  .btn-accent:active { transform: scale(0.98); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+  .hero { padding: 72px 24px 48px; max-width: 680px; margin: 0 auto; text-align: center; }
+  .hero-eyebrow { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; font-weight: 500; }
+  .hero h1 { font-family: var(--serif); font-size: clamp(36px, 6vw, 52px); line-height: 1.15; color: var(--ink); margin-bottom: 16px; }
+  .hero h1 em { color: var(--accent); font-style: italic; }
+  .hero p { font-size: 16px; color: var(--ink-muted); line-height: 1.7; max-width: 480px; margin: 0 auto 28px; }
+  .hero-stats { display: flex; gap: 28px; justify-content: center; font-size: 13px; color: var(--ink-faint); }
+  .hero-stats span { display: flex; align-items: center; gap: 5px; }
+
+  .filter-bar { padding: 0 24px 24px; max-width: 860px; margin: 0 auto; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .filter-label { font-size: 12px; color: var(--ink-faint); margin-right: 4px; }
+  .pill { padding: 6px 16px; border-radius: 999px; border: 1px solid var(--border); font-size: 13px; cursor: pointer; color: var(--ink-muted); background: var(--warm-white); transition: all 0.15s; font-family: var(--sans); }
+  .pill:hover { border-color: var(--border-hover); color: var(--ink); }
+  .pill.active { background: var(--ink); color: white; border-color: var(--ink); }
+
+  .boards-section { max-width: 860px; margin: 0 auto; padding: 0 24px 80px; }
+  .boards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+
+  .board-card { background: var(--warm-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 10px; animation: fadeUp 0.4s ease both; }
+  .board-card:hover { border-color: var(--border-hover); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,22,18,0.06); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; letter-spacing: 0.04em; padding: 3px 10px; border-radius: 999px; }
+  .card-title { font-family: var(--serif); font-size: 17px; line-height: 1.35; color: var(--ink); }
+  .card-preview { font-size: 13px; color: var(--ink-muted); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+  .card-author { font-size: 11px; color: var(--ink-faint); font-style: italic; }
+  .card-actions { display: flex; gap: 12px; align-items: center; }
+  .card-action { background: none; border: none; cursor: pointer; font-size: 12px; color: var(--ink-faint); display: flex; align-items: center; gap: 4px; font-family: var(--sans); transition: color 0.15s; padding: 0; }
+  .card-action:hover { color: var(--accent); }
+  .card-action.liked { color: var(--accent); }
+  .card-action svg { width: 13px; height: 13px; }
+
+  .new-board-tile { border: 1.5px dashed var(--border-hover); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; min-height: 140px; background: transparent; transition: all 0.2s; color: var(--ink-muted); text-align: center; }
+  .new-board-tile:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .new-board-tile svg { width: 22px; height: 22px; }
+  .new-board-tile span { font-size: 13px; }
+
+  .empty-state { text-align: center; padding: 60px 24px; color: var(--ink-faint); grid-column: 1/-1; }
+  .empty-state h3 { font-family: var(--serif); font-size: 22px; color: var(--ink-muted); margin-bottom: 8px; }
+
+  /* LOADING */
+  .loading-state { text-align: center; padding: 60px 24px; grid-column: 1/-1; }
+  .spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-state p { font-size: 13px; color: var(--ink-faint); }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(26,22,18,0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 24px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--warm-white); border-radius: var(--radius); padding: 28px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; animation: modalIn 0.2s ease; }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.97) translateY(8px); } to { opacity: 1; transform: none; } }
+  .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title { font-family: var(--serif); font-size: 22px; color: var(--ink); }
+  .modal-subtitle { font-size: 13px; color: var(--ink-muted); margin-top: 4px; line-height: 1.5; }
+  .close-btn { background: none; border: none; cursor: pointer; color: var(--ink-faint); padding: 4px; border-radius: 4px; transition: color 0.15s; }
+  .close-btn:hover { color: var(--ink); }
+  .close-btn svg { width: 18px; height: 18px; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--ink-muted); margin-bottom: 6px; display: block; letter-spacing: 0.04em; text-transform: uppercase; }
+  input, textarea, select { width: 100%; font-family: var(--sans); font-size: 14px; background: var(--cream); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--ink); padding: 10px 14px; outline: none; transition: border-color 0.15s; }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+  .anon-note { font-size: 11px; color: var(--ink-faint); margin-top: 5px; display: flex; align-items: center; gap: 4px; }
+  .anon-note svg { width: 11px; height: 11px; }
+  .char-count { font-size: 11px; color: var(--ink-faint); text-align: right; margin-top: 4px; }
+
+  .tag-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .tag-option { padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); font-size: 12px; cursor: pointer; text-align: center; font-family: var(--sans); transition: all 0.15s; background: var(--warm-white); color: var(--ink-muted); }
+  .tag-option[data-tag="grief"].selected { background: var(--tag-grief-bg); border-color: var(--tag-grief); color: var(--tag-grief); border-width: 1.5px; }
+  .tag-option[data-tag="anxiety"].selected { background: var(--tag-anxiety-bg); border-color: var(--tag-anxiety); color: var(--tag-anxiety); border-width: 1.5px; }
+  .tag-option[data-tag="loneliness"].selected { background: var(--tag-loneliness-bg); border-color: var(--tag-loneliness); color: var(--tag-loneliness); border-width: 1.5px; }
+  .tag-option[data-tag="anger"].selected { background: var(--tag-anger-bg); border-color: var(--tag-anger); color: var(--tag-anger); border-width: 1.5px; }
+  .tag-option[data-tag="relationship"].selected { background: var(--tag-relationship-bg); border-color: var(--tag-relationship); color: var(--tag-relationship); border-width: 1.5px; }
+  .tag-option[data-tag="loss"].selected { background: var(--tag-loss-bg); border-color: var(--tag-loss); color: var(--tag-loss); border-width: 1.5px; }
+  .tag-option[data-tag="open"].selected { background: var(--tag-open-bg); border-color: var(--tag-open); color: var(--tag-open); border-width: 1.5px; }
+
+  /* BOARD DETAIL */
+  .board-detail { max-width: 680px; margin: 0 auto; padding: 32px 24px 80px; }
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-muted); cursor: pointer; background: none; border: none; font-family: var(--sans); padding: 0; margin-bottom: 28px; transition: color 0.15s; }
+  .back-btn:hover { color: var(--ink); }
+  .back-btn svg { width: 15px; height: 15px; }
+
+  .original-post { background: var(--warm-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 8px; }
+  .post-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 999px; margin-bottom: 12px; }
+  .post-title { font-family: var(--serif); font-size: 24px; line-height: 1.3; color: var(--ink); margin-bottom: 12px; }
+  .post-body { font-size: 15px; color: var(--ink-muted); line-height: 1.75; white-space: pre-wrap; word-break: break-word; }
+  .post-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 10px; }
+  .post-author { font-size: 12px; color: var(--ink-faint); font-style: italic; }
+  .post-actions { display: flex; gap: 14px; align-items: center; }
+
+  .share-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; align-items: center; }
+  .share-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink-muted); background: var(--cream); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 5px 12px; cursor: pointer; font-family: var(--sans); transition: all 0.15s; }
+  .share-btn:hover { border-color: var(--border-hover); color: var(--ink); }
+  .share-btn svg { width: 12px; height: 12px; }
+  .copied-badge { font-size: 11px; color: #276749; background: #F0FFF4; border: 1px solid #C6F6D5; padding: 4px 10px; border-radius: var(--radius-sm); display: none; align-items: center; gap: 4px; }
+  .copied-badge.show { display: inline-flex; }
+
+  .replies-header { font-size: 13px; font-weight: 500; color: var(--ink-muted); margin: 28px 0 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .reply-card { background: var(--warm-white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 10px; animation: fadeUp 0.3s ease; }
+  .reply-body { font-size: 14px; color: var(--ink-muted); line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+  .reply-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+  .reply-author { font-size: 11px; color: var(--ink-faint); font-style: italic; }
+  .reply-time { font-size: 11px; color: var(--ink-faint); }
+
+  .reply-box { background: var(--warm-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-top: 24px; }
+  .reply-box h3 { font-family: var(--serif); font-size: 18px; color: var(--ink); margin-bottom: 14px; }
+
+  /* REAL-TIME INDICATOR */
+  .live-dot { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ink-faint); }
+  .live-dot::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #276749; display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: white; padding: 10px 22px; border-radius: 999px; font-size: 13px; z-index: 500; opacity: 0; transition: all 0.3s ease; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .tag-grief { background: var(--tag-grief-bg); color: var(--tag-grief); }
+  .tag-anxiety { background: var(--tag-anxiety-bg); color: var(--tag-anxiety); }
+  .tag-loneliness { background: var(--tag-loneliness-bg); color: var(--tag-loneliness); }
+  .tag-anger { background: var(--tag-anger-bg); color: var(--tag-anger); }
+  .tag-relationship { background: var(--tag-relationship-bg); color: var(--tag-relationship); }
+  .tag-loss { background: var(--tag-loss-bg); color: var(--tag-loss); }
+  .tag-open { background: var(--tag-open-bg); color: var(--tag-open); }
+
+  @media (max-width: 600px) {
+    .hero { padding: 48px 20px 32px; }
+    .boards-grid { grid-template-columns: 1fr; }
+    .tag-grid { grid-template-columns: repeat(2, 1fr); }
+    nav { padding: 0 16px; }
+    .boards-section { padding: 0 16px 60px; }
+    .filter-bar { padding: 0 16px 20px; }
+    .modal { padding: 20px; }
+    .toast { white-space: normal; text-align: center; width: 80%; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo" onclick="showHome()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    Open Heart
+  </div>
+  <div class="nav-actions">
+    <span class="live-dot" id="live-indicator" style="display:none">Live</span>
+    <button class="btn btn-ghost btn-sm" onclick="showHome()">Boards</button>
+    <button class="btn btn-accent btn-sm" onclick="openNewBoardModal()">+ Share your story</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div id="view-home" class="view active">
+  <div class="hero">
+    <div class="hero-eyebrow">Anonymous · Safe · Judgment-free</div>
+    <h1>A place to open your<br><em>heart</em> without fear</h1>
+    <p>Real emotions. Anonymous voices. Here, you don't have to perform happiness. Say what's actually weighing on you — and find people who truly get it.</p>
+    <div class="hero-stats">
+      <span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span id="stat-boards">— stories shared</span>
+      </span>
+      <span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        <span id="stat-hearts">— moments of support</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <button class="pill active" onclick="setFilter('all',this)">All</button>
+    <button class="pill" onclick="setFilter('grief',this)">Grief</button>
+    <button class="pill" onclick="setFilter('anxiety',this)">Anxiety</button>
+    <button class="pill" onclick="setFilter('loneliness',this)">Loneliness</button>
+    <button class="pill" onclick="setFilter('anger',this)">Anger</button>
+    <button class="pill" onclick="setFilter('relationship',this)">Relationship</button>
+    <button class="pill" onclick="setFilter('loss',this)">Loss</button>
+    <button class="pill" onclick="setFilter('open',this)">Just venting</button>
+  </div>
+
+  <div class="boards-section">
+    <div class="boards-grid" id="boards-grid">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading stories...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOARD DETAIL -->
+<div id="view-board" class="view">
+  <div class="board-detail">
+    <button class="back-btn" onclick="showHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      Back to all stories
+    </button>
+    <div class="original-post" id="detail-post">
+      <div class="loading-state"><div class="spinner"></div><p>Loading...</p></div>
+    </div>
+    <div class="share-row">
+      <button class="share-btn" onclick="copyBoardLink()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+        Copy this story's link
+      </button>
+      <button class="share-btn" onclick="copySiteLink()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+        Share Open Heart
+      </button>
+      <span class="copied-badge" id="copied-badge">✓ Copied!</span>
+    </div>
+    <div id="replies-section"></div>
+    <div class="reply-box">
+      <h3>You're not alone in this.</h3>
+      <div class="form-group">
+        <label class="form-label">Your anonymous name</label>
+        <input type="text" id="reply-name" placeholder="e.g. Raat_Ka_Musafir" maxlength="30">
+        <div class="anon-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          No real name needed. Stay anonymous.
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Your reply</label>
+        <textarea id="reply-body" placeholder="Share your experience, or just let them know they're heard..." maxlength="800" oninput="updateCharCount('reply-body','reply-char')"></textarea>
+        <div class="char-count"><span id="reply-char">0</span>/800</div>
+      </div>
+      <button class="btn btn-accent" onclick="submitReply()" style="width:100%">Send with love →</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW BOARD MODAL -->
+<div class="modal-overlay" id="new-board-modal" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Open your heart</div>
+        <div class="modal-subtitle">Write what's been on your mind. No filters, no judgment. No one knows who you are.</div>
+      </div>
+      <button class="close-btn" onclick="closeNewBoardModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Your anonymous name</label>
+      <input type="text" id="new-name" placeholder="e.g. Sheher_Ka_Akela, Raat_Ki_Awaaz..." maxlength="30">
+      <div class="anon-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        Completely anonymous. We never ask for your real name or email.
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">What's weighing on you? (Title)</label>
+      <input type="text" id="new-title" placeholder="Give your story a voice..." maxlength="100" oninput="updateCharCount('new-title','title-char')">
+      <div class="char-count"><span id="title-char">0</span>/100</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tell your story</label>
+      <textarea id="new-body" placeholder="Say it here. The full truth. As long or short as you need." maxlength="2000" style="min-height:130px" oninput="updateCharCount('new-body','body-char')"></textarea>
+      <div class="char-count"><span id="body-char">0</span>/2000</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">What does this feel like?</label>
+      <div class="tag-grid">
+        <button class="tag-option" data-tag="grief" onclick="selectTag('grief')">💭 Grief</button>
+        <button class="tag-option" data-tag="anxiety" onclick="selectTag('anxiety')">🌀 Anxiety</button>
+        <button class="tag-option" data-tag="loneliness" onclick="selectTag('loneliness')">🌙 Loneliness</button>
+        <button class="tag-option" data-tag="anger" onclick="selectTag('anger')">🔥 Anger</button>
+        <button class="tag-option" data-tag="relationship" onclick="selectTag('relationship')">💔 Relationship</button>
+        <button class="tag-option" data-tag="loss" onclick="selectTag('loss')">🕊 Loss</button>
+        <button class="tag-option" data-tag="open" onclick="selectTag('open')">✏️ Just venting</button>
+      </div>
+    </div>
+    <button class="btn btn-accent" onclick="submitBoard()" style="width:100%;margin-top:4px" id="submit-board-btn">Share your story →</button>
+    <p style="font-size:11px;color:var(--ink-faint);text-align:center;margin-top:12px;line-height:1.6">
+      By sharing, you agree to be kind to others. This space is for healing, not hate.<br>
+      Crisis helplines: iCall 9152987821 · Vandrevala 1860-2662-345
+    </p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE SDK (CDN, no npm needed for static hosting) -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, increment, orderBy, query, getDoc, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDiPUkx5VhpatqWPIyWJ3m7G7UzA3Mw5f4",
+  authDomain: "open-heart-9764e.firebaseapp.com",
+  projectId: "open-heart-9764e",
+  storageBucket: "open-heart-9764e.firebasestorage.app",
+  messagingSenderId: "579827345697",
+  appId: "1:579827345697:web:dedfb5fa323bde74353660",
+  measurementId: "G-PC76W3VTKJ"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// State
+let boards = [];
+let currentFilter = 'all';
+let currentBoardId = null;
+let selectedTag = '';
+let replyUnsubscribe = null;
+let boardsUnsubscribe = null;
+
+// ─── UTILS ───────────────────────────────────────────────
+function escHtml(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function timeAgo(ts) {
+  if (!ts) return '';
+  const ms = ts.toMillis ? ts.toMillis() : ts;
+  const diff = Date.now() - ms;
+  const m = Math.floor(diff/60000), h = Math.floor(diff/3600000), d = Math.floor(diff/86400000);
+  if (m < 1) return 'just now';
+  if (m < 60) return m + 'm ago';
+  if (h < 24) return h + 'h ago';
+  if (d < 7) return d + 'd ago';
+  return new Date(ms).toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+}
+function tagLabel(tag) {
+  return { grief:'Grief', anxiety:'Anxiety', loneliness:'Loneliness', anger:'Anger', relationship:'Relationship', loss:'Loss', open:'Just venting' }[tag] || tag;
+}
+function getLikes() { try { return JSON.parse(localStorage.getItem('oh_likes')||'{}'); } catch(e) { return {}; } }
+function saveLikes(l) { localStorage.setItem('oh_likes', JSON.stringify(l)); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function updateCharCount(id, countId) {
+  document.getElementById(countId).textContent = document.getElementById(id).value.length;
+}
+window.updateCharCount = updateCharCount;
+
+// ─── VIEWS ───────────────────────────────────────────────
+function showHome() {
+  document.getElementById('view-home').classList.add('active');
+  document.getElementById('view-board').classList.remove('active');
+  if (replyUnsubscribe) { replyUnsubscribe(); replyUnsubscribe = null; }
+  currentBoardId = null;
+  history.pushState('', document.title, window.location.pathname);
+  startBoardsListener();
+}
+window.showHome = showHome;
+
+function showBoard(id) {
+  currentBoardId = id;
+  document.getElementById('view-home').classList.remove('active');
+  document.getElementById('view-board').classList.add('active');
+  window.scrollTo(0,0);
+  history.pushState('', '', '#board=' + id);
+  document.getElementById('detail-post').innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading story...</p></div>';
+  document.getElementById('replies-section').innerHTML = '';
+  if (replyUnsubscribe) replyUnsubscribe();
+  startBoardDetailListener(id);
+}
+window.showBoard = showBoard;
+
+// ─── FIRESTORE LISTENERS ─────────────────────────────────
+function startBoardsListener() {
+  if (boardsUnsubscribe) boardsUnsubscribe();
+  const q = query(collection(db, 'boards'), orderBy('time', 'desc'));
+  boardsUnsubscribe = onSnapshot(q, (snap) => {
+    boards = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    document.getElementById('live-indicator').style.display = 'inline-flex';
+    renderBoards();
+    updateStats();
+  }, (err) => {
+    console.error(err);
+    document.getElementById('boards-grid').innerHTML = '<div class="empty-state"><h3>Couldn\'t connect.</h3><p>Check your internet and reload.</p></div>';
+  });
+}
+
+function startBoardDetailListener(boardId) {
+  // Listen to board doc (for hearts)
+  const boardRef = doc(db, 'boards', boardId);
+  // Listen to replies subcollection
+  const repliesQ = query(collection(db, 'boards', boardId, 'replies'), orderBy('time', 'asc'));
+
+  let boardData = null;
+  let repliesData = [];
+
+  const unsubBoard = onSnapshot(boardRef, (snap) => {
+    if (!snap.exists()) { showToast('This story was removed.'); showHome(); return; }
+    boardData = { id: snap.id, ...snap.data() };
+    if (currentBoardId === boardId) renderBoardDetail(boardData, repliesData);
+  });
+
+  const unsubReplies = onSnapshot(repliesQ, (snap) => {
+    repliesData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (boardData && currentBoardId === boardId) renderBoardDetail(boardData, repliesData);
+  });
+
+  replyUnsubscribe = () => { unsubBoard(); unsubReplies(); };
+}
+
+// ─── RENDER ──────────────────────────────────────────────
+function renderBoards() {
+  const grid = document.getElementById('boards-grid');
+  const likes = getLikes();
+  const filtered = currentFilter === 'all' ? boards : boards.filter(b => b.tag === currentFilter);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state"><h3>No stories here yet.</h3><p>Be the first to share something in this space.</p></div>` + newBoardTile();
+    return;
+  }
+
+  grid.innerHTML = filtered.map((b, i) => {
+    const liked = !!likes[b.id];
+    return `<div class="board-card" onclick="showBoard('${b.id}')" style="animation-delay:${Math.min(i,6)*0.05}s">
+      <div><span class="card-tag tag-${b.tag}">${tagLabel(b.tag)}</span></div>
+      <div class="card-title">${escHtml(b.title)}</div>
+      <div class="card-preview">${escHtml(b.body)}</div>
+      <div class="card-footer">
+        <span class="card-author">— ${escHtml(b.name)}</span>
+        <div class="card-actions">
+          <button class="card-action" onclick="event.stopPropagation();showBoard('${b.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            ${b.replyCount||0}
+          </button>
+          <button class="card-action ${liked?'liked':''}" onclick="event.stopPropagation();toggleHeart('${b.id}')">
+            <svg viewBox="0 0 24 24" fill="${liked?'var(--accent)':'none'}" stroke="var(--accent)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            ${b.hearts||0}
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('') + newBoardTile();
+}
+
+function newBoardTile() {
+  return `<div class="new-board-tile" onclick="openNewBoardModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    <span>Start your own board</span>
+  </div>`;
+}
+
+function renderBoardDetail(board, replies) {
+  const likes = getLikes();
+  const liked = !!likes[board.id];
+
+  document.getElementById('detail-post').innerHTML = `
+    <div class="post-tag tag-${board.tag}">${tagLabel(board.tag)}</div>
+    <div class="post-title">${escHtml(board.title)}</div>
+    <div class="post-body">${escHtml(board.body)}</div>
+    <div class="post-footer">
+      <span class="post-author">— ${escHtml(board.name)}, ${timeAgo(board.time)}</span>
+      <div class="post-actions">
+        <button class="card-action ${liked?'liked':''}" onclick="toggleHeart('${board.id}')">
+          <svg viewBox="0 0 24 24" fill="${liked?'var(--accent)':'none'}" stroke="var(--accent)" stroke-width="2" style="width:16px;height:16px"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          <span style="font-size:13px">${board.hearts||0}</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  const section = document.getElementById('replies-section');
+  if (!replies || replies.length === 0) {
+    section.innerHTML = `<div class="replies-header">Replies (0)</div><p style="font-size:13px;color:var(--ink-faint);padding-bottom:8px">Be the first to respond. Your words might be exactly what they need to hear.</p>`;
+  } else {
+    section.innerHTML = `<div class="replies-header">Replies (${replies.length})</div>` +
+      replies.map(r => `
+        <div class="reply-card">
+          <div class="reply-body">${escHtml(r.body)}</div>
+          <div class="reply-footer">
+            <span class="reply-author">— ${escHtml(r.name)}</span>
+            <span class="reply-time">${timeAgo(r.time)}</span>
+          </div>
+        </div>`).join('');
+  }
+}
+
+function updateStats() {
+  const total = boards.length;
+  const hearts = boards.reduce((s,b) => s + (b.hearts||0), 0);
+  const replies = boards.reduce((s,b) => s + (b.replyCount||0), 0);
+  document.getElementById('stat-boards').textContent = total + ' stories shared';
+  document.getElementById('stat-hearts').textContent = (hearts + replies) + ' moments of support';
+}
+
+// ─── ACTIONS ─────────────────────────────────────────────
+window.setFilter = function(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderBoards();
+};
+
+window.toggleHeart = async function(boardId) {
+  const likes = getLikes();
+  const key = boardId;
+  const boardRef = doc(db, 'boards', boardId);
+  if (likes[key]) {
+    likes[key] = false;
+    await updateDoc(boardRef, { hearts: increment(-1) });
+  } else {
+    likes[key] = true;
+    await updateDoc(boardRef, { hearts: increment(1) });
+  }
+  saveLikes(likes);
+};
+
+window.openNewBoardModal = function() {
+  document.getElementById('new-board-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+window.closeNewBoardModal = function() {
+  document.getElementById('new-board-modal').classList.remove('open');
+  document.body.style.overflow = '';
+};
+window.handleOverlayClick = function(e) {
+  if (e.target === document.getElementById('new-board-modal')) window.closeNewBoardModal();
+};
+window.selectTag = function(tag) {
+  selectedTag = tag;
+  document.querySelectorAll('.tag-option').forEach(el => el.classList.toggle('selected', el.dataset.tag === tag));
+};
+
+window.submitBoard = async function() {
+  const name = document.getElementById('new-name').value.trim();
+  const title = document.getElementById('new-title').value.trim();
+  const body = document.getElementById('new-body').value.trim();
+  if (!name) { showToast('Give yourself an anonymous name 🙂'); return; }
+  if (!title || title.length < 5) { showToast('Write a title for your story'); return; }
+  if (!body || body.length < 20) { showToast('Share a little more — you\'re safe here'); return; }
+  if (!selectedTag) { showToast('Pick a tag that fits how you feel'); return; }
+
+  const btn = document.getElementById('submit-board-btn');
+  btn.disabled = true; btn.textContent = 'Sharing...';
+
+  try {
+    const ref = await addDoc(collection(db, 'boards'), {
+      name, title, body, tag: selectedTag,
+      hearts: 0, replyCount: 0,
+      time: serverTimestamp()
+    });
+    document.getElementById('new-name').value = '';
+    document.getElementById('new-title').value = '';
+    document.getElementById('new-body').value = '';
+    document.getElementById('title-char').textContent = '0';
+    document.getElementById('body-char').textContent = '0';
+    document.querySelectorAll('.tag-option').forEach(el => el.classList.remove('selected'));
+    selectedTag = '';
+    window.closeNewBoardModal();
+    showToast('Your story has been shared. You are not alone. 💛');
+    showBoard(ref.id);
+  } catch(e) {
+    showToast('Something went wrong. Please try again.');
+    console.error(e);
+  }
+  btn.disabled = false; btn.textContent = 'Share your story →';
+};
+
+window.submitReply = async function() {
+  const name = document.getElementById('reply-name').value.trim();
+  const body = document.getElementById('reply-body').value.trim();
+  if (!name) { showToast('Give yourself an anonymous name'); return; }
+  if (!body || body.length < 5) { showToast('Say a little more ❤️'); return; }
+  if (!currentBoardId) return;
+
+  const btn = document.querySelector('.reply-box .btn-accent');
+  btn.disabled = true; btn.textContent = 'Sending...';
+
+  try {
+    await addDoc(collection(db, 'boards', currentBoardId, 'replies'), {
+      name, body, time: serverTimestamp()
+    });
+    await updateDoc(doc(db, 'boards', currentBoardId), { replyCount: increment(1) });
+    document.getElementById('reply-name').value = '';
+    document.getElementById('reply-body').value = '';
+    document.getElementById('reply-char').textContent = '0';
+    showToast('Your reply has been sent. Thank you for showing up. 💛');
+  } catch(e) {
+    showToast('Something went wrong. Try again.');
+    console.error(e);
+  }
+  btn.disabled = false; btn.textContent = 'Send with love →';
+};
+
+// ─── SHARE ───────────────────────────────────────────────
+window.copyBoardLink = function() {
+  if (!currentBoardId) return;
+  const url = window.location.origin + window.location.pathname + '#board=' + currentBoardId;
+  navigator.clipboard.writeText(url).then(showCopied).catch(() => prompt('Copy this link:', url));
+};
+window.copySiteLink = function() {
+  const url = window.location.origin + window.location.pathname;
+  navigator.clipboard.writeText(url).then(showCopied).catch(() => prompt('Copy this link:', url));
+};
+function showCopied() {
+  const b = document.getElementById('copied-badge');
+  b.classList.add('show');
+  setTimeout(() => b.classList.remove('show'), 2500);
+}
+
+// ─── ROUTING ─────────────────────────────────────────────
+window.addEventListener('popstate', () => {
+  const hash = window.location.hash;
+  if (hash.startsWith('#board=')) showBoard(hash.replace('#board=',''));
+  else showHome();
+});
+
+function init() {
+  const hash = window.location.hash;
+  if (hash.startsWith('#board=')) {
+    startBoardsListener();
+    showBoard(hash.replace('#board=',''));
+  } else {
+    showHome();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
